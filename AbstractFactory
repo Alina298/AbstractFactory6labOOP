@@ -1,0 +1,117 @@
+//Используя шаблон «Абстрактная фабрика» реализовать программу создания персональных компьютеров двумя фирмами Apple и IBM.
+
+#include <iostream>
+
+using namespace std;
+
+
+class SystemUnit {
+ public:
+  virtual ~SystemUnit(){};
+  virtual string UsefulFunctionA() const = 0;
+};
+
+
+class AppleSystemUnit : public SystemUnit{
+ public:
+  string UsefulFunctionA() const override {
+    return " AppleSystemUnit";
+  }
+};
+
+class IBMSystemUnit : public SystemUnit{
+  string UsefulFunctionA() const override {
+    return " IBMSystemUnit";
+  }
+};
+
+class Monitor {
+ public:
+  virtual ~Monitor(){};
+  virtual string UsefulFunctionB() const = 0;
+  virtual string AnotherUsefulFunctionB(const SystemUnit &collaborator) const = 0;
+};
+
+
+class AppleMonitor : public  Monitor {
+ public:
+  string UsefulFunctionB() const override {
+    return " AppleMonitor";
+  }
+  string AnotherUsefulFunctionB(const SystemUnit &collaborator) const override {
+    const string result = collaborator.UsefulFunctionA();
+    return "Сборка AppleMonitor с ( " + result + " )";
+  }
+};
+
+class IBMMonitor : public Monitor {
+  string UsefulFunctionB() const override {
+    return " IBMMonitor";
+  }
+  string AnotherUsefulFunctionB(const SystemUnit &collaborator) const override {
+    const string result = collaborator.UsefulFunctionA();
+    return "Сборка IBMMonitor с ( " + result + " )";
+  }
+};
+
+
+class CompFactory {
+ public:
+  virtual SystemUnit *CreateSystemUnit() const = 0;
+  virtual Monitor  *CreateMonitor() const = 0;
+};
+
+class AppleCompFactory : public CompFactory {
+ public:
+  SystemUnit *CreateSystemUnit() const override {
+    return new AppleSystemUnit();
+  }
+  Monitor *CreateMonitor() const override {
+    return new AppleMonitor ();
+  }
+};
+
+ 
+class IBMCompFactory : public CompFactory {
+ public:
+ SystemUnit*CreateSystemUnit() const override {
+    return new IBMSystemUnit ();
+  }
+  Monitor *CreateMonitor() const override {
+    return new IBMMonitor ();
+  }
+};
+
+
+void Client(const CompFactory &compFactory) {
+  const SystemUnit *product_a = compFactory.CreateSystemUnit();
+  const  Monitor *product_b = compFactory.CreateMonitor();
+  cout << product_b->UsefulFunctionB() << "\n";
+  cout << product_b->AnotherUsefulFunctionB(*product_a) << "\n";
+  delete product_a;
+  delete product_b;
+}
+
+int main() {
+  cout << "Client: Сборка компьютера фирмы Apple  :\n";
+  AppleCompFactory *f1 = new AppleCompFactory();
+  Client(*f1);
+  delete f1;
+  cout << endl;
+  cout << "Client: Сборка компьютера фирмы IBM :\n";
+  IBMCompFactory *f2 = new IBMCompFactory();
+  Client(*f2);
+  delete f2;
+  return 0;
+}
+
+
+Вывод:
+
+Client: Сборка компьютера фирмы Apple  :                                                                                        
+ AppleMonitor                                                                                                                   
+Сборка AppleMonitor с (  AppleSystemUnit )                                                                                      
+                                                                                                                                
+Client: Сборка компьютера фирмы IBM :                                                                                           
+ IBMMonitor                                                                                                                     
+Сборка IBMMonitor с (  IBMSystemUnit )   
